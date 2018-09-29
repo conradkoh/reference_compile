@@ -1,0 +1,14 @@
+{
+  "name": "reference_compile",
+  "version": "1.0.4",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "bin": {
+    "reference_compile": "reference_compile"
+  },
+  "author": "",
+  "license": "ISC"
+}
