@@ -3,7 +3,7 @@ var Path = require('path');
 var TARGET_FOLDER = 'references';
 var REFERENCE_FILENAME = 'reference.js';
 
-function compile(reference_root) {
+function compile(reference_root, outfile = `${process.cwd()}/${REFERENCE_FILENAME}`) {
     var acquired_path = acquirePath(reference_root);
     //Sanity checks
     if (!Fs.existsSync(acquired_path)) {
@@ -21,7 +21,7 @@ function compile(reference_root) {
     var pre = "module.exports = {";
     var post = "\n};";
     var script = `${pre}${compileReferences(references, 1)}${post}`;
-    Fs.writeFileSync(`${process.cwd()}/${REFERENCE_FILENAME}`, script);
+    Fs.writeFileSync(outfile, script);
     console.log(`Compile completed successfully.`);
 }
 
