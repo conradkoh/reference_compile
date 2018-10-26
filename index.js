@@ -15,7 +15,6 @@ function compile(reference_root, outfile = `${process.cwd()}/${REFERENCE_FILENAM
         console.log(`Target root folder does not exist: "${target_root}"`)
         return;
     }
-
     var references = buildReferences(target_root, `./${TARGET_FOLDER}`);
     //Fs.writeFileSync(`${root}/index.json`, JSON.stringify(references));
     var pre = "module.exports = {";
@@ -30,7 +29,6 @@ function buildReferences(filepath, root) {
     diritems = diritems ? diritems : [];
     var references = {};
     for (var idx in diritems) {
-
         var itemname = diritems[idx];
         var itempath = Path.join(filepath, itemname);
         var stat = Fs.lstatSync(itempath);
@@ -43,7 +41,6 @@ function buildReferences(filepath, root) {
     }
     return references;
 }
-
 
 function compileReferences(references, depth) {
     var indent = indentForDepth(depth);
@@ -61,7 +58,7 @@ function compileReferences(references, depth) {
             op = `${indent}"${key}":${pre}${subReferences}${post}`;
         } else if (typeof item === 'string') { //Map to a file
             console.log(`Including: ${key}: ${item}`);
-            op = `${indent}"${key}": require('${item}')\n${indent_last}`;
+            op = `${indent}"${key}": { require: () => require('${item}') }\n${indent_last}`;
         }
         return `\n${op}`;
     }).reduce((last, cur, index) => {
@@ -69,8 +66,7 @@ function compileReferences(references, depth) {
         return op;
     }, "");
 }
-
-const INDENTATION = "    ";
+const INDENTATION = " ";
 
 function indentForDepth(depth) {
     var indent = "";
@@ -79,7 +75,6 @@ function indentForDepth(depth) {
     }
     return indent;
 }
-
 
 /**
  * 
@@ -90,7 +85,6 @@ function acquirePath(reference_root) {
     if (!reference_root || reference_root.length === 0) {
         return process.cwd();
     }
-
     switch (reference_root[0]) {
         case '.':
             //replace relative path with process working directory
@@ -101,7 +95,6 @@ function acquirePath(reference_root) {
             return reference_root;
             break;
     }
-
 
 }
 module.exports = {
