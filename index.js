@@ -2,6 +2,7 @@ var Fs = require('fs');
 var Path = require('path');
 var TARGET_FOLDER = 'references';
 var REFERENCE_FILENAME = 'reference.js';
+const INDENTATION = "  ";
 
 function compile(reference_root, outfile = `${process.cwd()}/${REFERENCE_FILENAME}`) {
     var acquired_path = acquirePath(reference_root);
@@ -19,7 +20,16 @@ function compile(reference_root, outfile = `${process.cwd()}/${REFERENCE_FILENAM
     //Fs.writeFileSync(`${root}/index.json`, JSON.stringify(references));
     var pre = "module.exports = {";
     var post = "\n};";
-    var script = `${pre}${compileReferences(references, 1)}${post}`;
+    // var script = `${pre}${compileReferences(references, 1)}${post}`;
+    var inner_script = compileReferences(references, 0);
+    var inner_script_formatted = inner_script.split('\n')
+        .map(line => {
+            return `${INDENTATION}${line}`
+        })
+        .reduce((last, cur, index) => {
+            return `${last}\n${cur}`
+        }, "");
+    var script = `${pre}${inner_script_formatted}${post}`;
     Fs.writeFileSync(outfile, script);
     console.log(`Compile completed successfully.`);
 }
@@ -41,13 +51,43 @@ function buildReferences(filepath, root) {
     }
     return references;
 }
-
+/**
+ * 
+ * @param {*} references 
+ * @param {*} depth 
+ * @return {string}
+ */
 function compileReferences(references, depth) {
     var indent = indentForDepth(depth);
-    var indent_last = indentForDepth(depth - 1);
-    var pre = ` {`;
-    var post = `}`;
+    // var pre = ` {\n${indent}`;
+    // var post = `\n${indent}}`;
+    var pre = '{';
+    var post = '}';
     var content = "";
+    return Object.keys(references).map(key => {
+        var item = references[key]; //This can be an object or string
+        if (typeof item === 'object') { //This was a folderconsole.log(`Found: ${key}`);
+            //get sub objects
+            var subReferences = compileReferences(item, depth + 1);
+            if (subReferences === undefined) {
+                console.log(item)
+            };
+            const subreference_indented = subReferences.split('\n')
+                .map(line => {
+                    return `${INDENTATION}${line}`
+                })
+                .reduce((last, cur, idx) => {
+                    return last ? last + "\n" + cur : cur;
+                }, "")
+            const subreference_indented_formatted = subreference_indented.trim() === "" ? `${pre}${post}` : `${pre}\n${subreference_indented}\n${post}`;
+            return `"${key}": ${subreference_indented_formatted}`
+        } else if (typeof item === 'string') {
+            return `"${key}": ${pre} require: () => require('${item}') ${post}`
+        }
+    }).reduce((last, cur, index) => {
+        var op = (index === 0) ? cur : (last + `,\n` + cur);
+        return op;
+    }, "");
     return Object.keys(references).map(key => {
         var item = references[key];
         var op = "";
@@ -55,18 +95,17 @@ function compileReferences(references, depth) {
             console.log(`Found: ${key}`);
             //get sub objects
             var subReferences = compileReferences(item, depth + 1);
-            op = `${indent}"${key}":${pre}${subReferences}${post}`;
+            op = `${INDENTATION}"${key}":${pre}${subReferences}${post}`;
         } else if (typeof item === 'string') { //Map to a file
             console.log(`Including: ${key}: ${item}`);
-            op = `${indent}"${key}": { require: () => require('${item}') }\n${indent_last}`;
+            op = `${INDENTATION}"${key}": { require: () => require('${item}') }`;
         }
-        return `\n${op}`;
+        return `${op}`;
     }).reduce((last, cur, index) => {
         var op = (index === 0) ? cur : (last + ',' + cur);
         return op;
     }, "");
 }
-const INDENTATION = " ";
 
 function indentForDepth(depth) {
     var indent = "";
