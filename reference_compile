@@ -1,3 +1,4 @@
 #!/usr/bin/env node
+
 var lib = require('./index')
-lib.compile('./references');
+lib.compile('.');
