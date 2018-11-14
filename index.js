@@ -2,7 +2,7 @@ var Fs = require('fs');
 var Path = require('path');
 var TARGET_FOLDER = 'references';
 var REFERENCE_FILENAME = 'reference.js';
-const INDENTATION = " ";
+const INDENTATION = "    ";
 
 function compile(reference_root, outfile = `${process.cwd()}/${REFERENCE_FILENAME}`) {
     var acquired_path = acquirePath(reference_root);
