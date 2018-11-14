@@ -2,7 +2,7 @@ var Fs = require('fs');
 var Path = require('path');
 var TARGET_FOLDER = 'references';
 var REFERENCE_FILENAME = 'reference.js';
-const INDENTATION = "  ";
+const INDENTATION = " ";
 
 function compile(reference_root, outfile = `${process.cwd()}/${REFERENCE_FILENAME}`) {
     var acquired_path = acquirePath(reference_root);
@@ -82,7 +82,7 @@ function compileReferences(references, depth) {
             const subreference_indented_formatted = subreference_indented.trim() === "" ? `${pre}${post}` : `${pre}\n${subreference_indented}\n${post}`;
             return `"${key}": ${subreference_indented_formatted}`
         } else if (typeof item === 'string') {
-            return `"${key}": ${pre} require: () => require('${item}') ${post}`
+            return `"${key}": ${pre}require: () => require('${item}')${post}`
         }
     }).reduce((last, cur, index) => {
         var op = (index === 0) ? cur : (last + `,\n` + cur);
@@ -98,7 +98,7 @@ function compileReferences(references, depth) {
             op = `${INDENTATION}"${key}":${pre}${subReferences}${post}`;
         } else if (typeof item === 'string') { //Map to a file
             console.log(`Including: ${key}: ${item}`);
-            op = `${INDENTATION}"${key}": { require: () => require('${item}') }`;
+            op = `${INDENTATION}"${key}": {require: () => require('${item}')}`;
         }
         return `${op}`;
     }).reduce((last, cur, index) => {
@@ -114,7 +114,6 @@ function indentForDepth(depth) {
     }
     return indent;
 }
-
 /**
  * 
  * @param {string} reference_root 
@@ -134,7 +133,6 @@ function acquirePath(reference_root) {
             return reference_root;
             break;
     }
-
 }
 module.exports = {
     compile: compile
