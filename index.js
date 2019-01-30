@@ -17,10 +17,8 @@ function compile(reference_root, outfile = `${process.cwd()}/${REFERENCE_FILENAM
         return;
     }
     var references = buildReferences(target_root, `./${TARGET_FOLDER}`);
-    //Fs.writeFileSync(`${root}/index.json`, JSON.stringify(references));
     var pre = "module.exports = {";
     var post = "\n};";
-    // var script = `${pre}${compileReferences(references, 1)}${post}`;
     var inner_script = compileReferences(references, 0);
     var inner_script_formatted = inner_script.split('\n')
         .map(line => {
@@ -58,12 +56,8 @@ function buildReferences(filepath, root) {
  * @return {string}
  */
 function compileReferences(references, depth) {
-    var indent = indentForDepth(depth);
-    // var pre = ` {\n${indent}`;
-    // var post = `\n${indent}}`;
     var pre = '{';
     var post = '}';
-    var content = "";
     return Object.keys(references).map(key => {
         var item = references[key]; //This can be an object or string
         if (typeof item === 'object') { //This was a folderconsole.log(`Found: ${key}`);
@@ -82,9 +76,19 @@ function compileReferences(references, depth) {
             const subreference_indented_formatted = subreference_indented.trim() === "" ? `${pre}${post}` : `${pre}\n${subreference_indented}\n${post}`;
             return `"${key}": ${subreference_indented_formatted}`
         } else if (typeof item === 'string') {
-            return `"${key}": ${pre}require: () => require('${item}')${post}`
+            let ext = Path.extname(item);
+            if(ext === '.js') {
+                return `"${key}": ${pre}require: () => require('${item}')${post}`
+            }
+            else {
+                return null;
+            }
         }
-    }).reduce((last, cur, index) => {
+    })
+    .filter(item => {
+        return item !== null;
+    })
+    .reduce((last, cur, index) => {
         var op = (index === 0) ? cur : (last + `,\n` + cur);
         return op;
     }, "");
